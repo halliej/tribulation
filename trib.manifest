@@ -1,0 +1,14 @@
+CACHE MANIFEST
+# 2015-05-15:v1.06
+
+# Explicitly cached 'master entries'.
+CACHE:
+favicon.ico
+board.js
+boardPieces.js
+tocca.min.js
+http://code.jquery.com/jquery-1.11.2.min.js
+
+# Resources that require the user to be online.
+NETWORK:
+*

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html manifest="trib.manifest">
+  <head>
+  	<meta name="viewport" content="width=device-width , initial-scale=1, userscalable=no">
+  	<meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <link rel="apple-touch-icon" sizes="57x57" href="apple-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="apple-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="apple-icon-114x114.png" />
+    <link rel="shortcut icon" href="favicon.ico">
+    <title>Tribulation Beta</title>
+    <style type="text/css">
+      html {
+        -webkit-text-size-adjust: 100%; 
+      }
+      body{
+        font-family: Calibri, "Helvetica Neue", Helvetica;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: black;
+      }
+      canvas { 
+        border: 1px solid black; 
+        background: black;
+      }
+      #boardDiv {
+        float:left;
+      }
+      #statusDiv {
+        float:left;
+        color: white;
+        margin-left:5px;
+        width:200px;
+      }
+      .d1 {
+        width: 50%;
+        float: left;
+      }
+      .d2 {
+        margin-top:18px;
+        width: 85px;
+        float: left;
+      }
+      .clear
+      {
+          clear: both;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0px;
+        margin: 0px;
+      }
+      .button-link {
+        padding: 4px 4px 3px 4px;
+        background: Cornsilk;
+        color: black;
+        text-decoration: none;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        border: solid 1px #20538D;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+        -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+        -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+        -webkit-transition-duration: 0.2s;
+        -moz-transition-duration: 0.2s;
+        transition-duration: 0.2s;
+      }
+      .btns li { 
+        display: inline;
+      }
+
+      #modal-background {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: gray;
+          opacity: .75;
+          -webkit-opacity: .75;
+          -moz-opacity: .75;
+          filter: alpha(opacity=75);
+          z-index: 1000;
+      }
+
+      #modal-content {
+          clear:both;
+          background-color: white;
+          border: 5px solid;
+          border-radius: 10px;
+          -webkit-border-radius: 10px;
+          -moz-border-radius: 10px;
+          box-shadow: 0 0 20px 0 #222;
+          -webkit-box-shadow: 0 0 20px 0 #222;
+          -moz-box-shadow: 0 0 20px 0 #222;
+          display: none;
+          height:50px;
+          width:250px;
+          left: 50%;
+          margin: -120px 0 0 -160px;
+          padding: 10px;
+          position: fixed;
+          top: 50%;
+          z-index: 1000;
+          text-align: center;
+      }
+
+      #modal-background.active, #modal-content.active {
+          display: block;
+      }​
+
+    </style>
+  </head>
+  <body>
+   <!-- 2015-05-15:v1.01 -->
+    <div id="container">   
+      <div id="boardDiv">
+        <canvas id="gameboard" width="600" height="600"></canvas>
+      </div> <!-- boardDiv -->
+      <div id="statusDiv">
+        <div id="tgtDiv"  style="padding-top:10px;">
+          <div class="d2">
+            <label>Your Target: </label>
+          </div> <!-- target label -->
+          <div>
+            <canvas id="targetIcon" width="50" height="50"></canvas>
+          </div> <!-- targetIcon canvas -->
+        </div> <!-- tgtDiv -->
+
+        <div id="scoreDiv" style="margin-bottom:10px;">
+          <ul>
+            <li><label>Tries: </label><span id="turns"></span></li>
+            <li><label>Correct: </label><span id="right"></span></li>
+            <li><label>Incorrect: </label><span id="wrong"></span></li>
+            <li><label>Passed: </label><span id="passed"></span></li>
+            <li><span id="result" style="font-weight:bold;">&nbsp;</span></li>
+          </ul>
+        </div> <!-- scoreDiv -->
+
+      </div> <!-- statusDiv -->
+
+      <div id="btnDiv" style="padding-top:10px; float:left;">
+        <ul id="btnGrp" class="btns" style="margin-top:10px;">
+          <li><a href="#" id="clearBtn" class="button-link">Clear</a></li>
+          <li><a href="#" id="passBtn" class="button-link">Pass</a></li>
+        </ul>
+      </div>  <!-- buttons --> 
+      
+    </div> container
+
+    <div id="modal-background"></div>
+    <div id="modal-content">
+      <p id="message"></p>
+    </div>
+
+    </div> <!-- container -->
+
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="board.js"></script>
+    <script src="boardPieces.js"></script>
+    <script>
+      var SWIPE_THRESHOLD = 5, // default value
+          DBL_TAP_THRESHOLD = 200, // range of time in which a dbltap event could be detected
+          TAP_THRESHOLD = 150, // range of time in which a tap event could be detected
+          TAP_PRECISION = 60 / 2, // default value (touch events boundaries)
+          JUST_ON_TOUCH_DEVICES = false; // default value ( decide whether you want to use the Tocca.js events only on the touch devices )
+    </script>
+    <script src="tocca.min.js"></script>
+    <script>
+    	$(document).ready(function() {
+        //document.location.href = "#";
+    		board.draw();
+
+        // watch for orientation change or resize events
+        $(window).on('orientationchange resize', function (event) {
+          board.draw();
+          //event.preventDefault();
+          return false;
+        });
+
+        $("#gameboard").on('tap',function (e,data){
+          e.preventDefault();
+          board.select(data.x, data.y);
+          return false;
+        });
+
+        $("#gameboard").on('swiperight',function(e,data){
+          e.preventDefault();
+          board.swap(data.x, data.y);
+          return false;
+        });
+
+        $(document).on('touchmove',function(e){e.preventDefault()});
+
+        $("#clearBtn").on('tap',function(e,data){
+          e.preventDefault();
+          board.clearSelections();
+          return false;
+        });      
+
+        $("#passBtn").on('tap',function(e,data){
+          e.preventDefault();
+          board.pass();
+          return false;
+        });   
+
+        $("#modal-background, #modal-content").on('tap', function(e) {
+          e.preventDefault();
+          board.clearSelections();
+          $("#modal-content, #modal-background").removeClass("active");
+          return false;
+        });
+
+    	});
+    </script>
+  </body>
+</html>
